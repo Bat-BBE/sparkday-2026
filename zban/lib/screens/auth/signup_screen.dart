@@ -56,7 +56,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
   // Step 5
   XFile? _profile;
 
-  static const _incomeOptions = [
+  // FIX: static final instead of static const for non-ASCII strings
+  static final _incomeOptions = [
     'Цалин',
     'Тэтгэвэр',
     'Бизнес',
@@ -68,7 +69,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
     'Тэтгэлэг',
     'Бусад',
   ];
-  static const _expenseOptions = [
+
+  static final _expenseOptions = [
     'Хоол хүнс',
     'Тээвэр',
     'Түрээс/ипотек',
@@ -156,8 +158,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
     setState(() => _profile = img);
   }
 
+  // FIX: removed _formKey.currentState?.validate() — form widget not in tree at step 6
   Future<void> _submit() async {
-    if (!(_formKey.currentState?.validate() ?? false)) return;
     final theme = ref.read(themeControllerProvider);
     String? b64;
     if (_profile != null) b64 = base64Encode(await _profile!.readAsBytes());
@@ -215,21 +217,14 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
       backgroundColor: const Color(0xFF0A0A0F),
       body: Stack(
         children: [
-          // Animated background
           _AnimatedSignupBg(primary: cs.primary),
-
-          // Floating blobs
           ..._buildBlobs(cs.primary, screenSize),
-
-          // Blur effect
           Positioned.fill(
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 50, sigmaY: 50),
               child: const SizedBox.shrink(),
             ),
           ),
-
-          // Main content
           SafeArea(
             child: Center(
               child: ConstrainedBox(
@@ -465,7 +460,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
   }
 }
 
+// ─────────────────────────────────────────────────────────────
 // Animated Background
+// ─────────────────────────────────────────────────────────────
 class _AnimatedSignupBg extends StatefulWidget {
   final Color primary;
   const _AnimatedSignupBg({required this.primary});
@@ -521,6 +518,9 @@ class _AnimatedSignupBgState extends State<_AnimatedSignupBg>
   }
 }
 
+// ─────────────────────────────────────────────────────────────
+// Blob
+// ─────────────────────────────────────────────────────────────
 class _SignupBlob extends StatefulWidget {
   final Color color;
   final double size;
@@ -609,6 +609,9 @@ class _SignupBlobState extends State<_SignupBlob>
   }
 }
 
+// ─────────────────────────────────────────────────────────────
+// Glass Logo
+// ─────────────────────────────────────────────────────────────
 class _GlassLogo extends StatelessWidget {
   final Color primary;
   const _GlassLogo({required this.primary});
@@ -646,6 +649,9 @@ class _GlassLogo extends StatelessWidget {
   }
 }
 
+// ─────────────────────────────────────────────────────────────
+// Glass Header Text
+// ─────────────────────────────────────────────────────────────
 class _GlassHeaderText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -699,6 +705,9 @@ class _GlassHeaderText extends StatelessWidget {
   }
 }
 
+// ─────────────────────────────────────────────────────────────
+// Glass Card
+// ─────────────────────────────────────────────────────────────
 class _GlassCard extends StatelessWidget {
   final Widget child;
   const _GlassCard({required this.child});
@@ -733,6 +742,9 @@ class _GlassCard extends StatelessWidget {
   }
 }
 
+// ─────────────────────────────────────────────────────────────
+// Wizard Progress
+// ─────────────────────────────────────────────────────────────
 class _WizardProgress extends StatelessWidget {
   final int step, total;
   final String title, hint;
@@ -799,6 +811,9 @@ class _WizardProgress extends StatelessWidget {
   }
 }
 
+// ─────────────────────────────────────────────────────────────
+// Step Dots
+// ─────────────────────────────────────────────────────────────
 class _StepDots extends StatelessWidget {
   final int current, total;
   final Color primary;
@@ -826,7 +841,9 @@ class _StepDots extends StatelessWidget {
   }
 }
 
+// ─────────────────────────────────────────────────────────────
 // Glass Back Button
+// ─────────────────────────────────────────────────────────────
 class _GlassBackButton extends StatelessWidget {
   final VoidCallback onTap;
   const _GlassBackButton({required this.onTap});
@@ -858,7 +875,10 @@ class _GlassBackButton extends StatelessWidget {
   }
 }
 
+// ─────────────────────────────────────────────────────────────
 // Glass Gradient Button
+// FIX: removed width: double.infinity, use minWidth constraint instead
+// ─────────────────────────────────────────────────────────────
 class _GlassGradientButton extends StatelessWidget {
   final String label;
   final bool loading;
@@ -876,8 +896,8 @@ class _GlassGradientButton extends StatelessWidget {
     return GestureDetector(
       onTap: loading ? null : onPressed,
       child: Container(
-        width: double.infinity,
         height: 52,
+        constraints: const BoxConstraints(minWidth: 80),
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [primary, primary.withOpacity(0.85)],
@@ -917,7 +937,9 @@ class _GlassGradientButton extends StatelessWidget {
   }
 }
 
+// ─────────────────────────────────────────────────────────────
 // Glass Ghost Button
+// ─────────────────────────────────────────────────────────────
 class _GlassGhostButton extends StatelessWidget {
   final String label;
   final VoidCallback? onTap;
@@ -954,7 +976,9 @@ class _GlassGhostButton extends StatelessWidget {
   }
 }
 
-// Step Basic (with glass fields)
+// ─────────────────────────────────────────────────────────────
+// Step 0 — Basic Info
+// ─────────────────────────────────────────────────────────────
 class _StepBasic extends StatelessWidget {
   final GlobalKey<FormState> formKey;
   final TextEditingController name, email, password, confirm;
@@ -973,14 +997,11 @@ class _StepBasic extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-
-    // ✅ ListView -> SingleChildScrollView
     return Form(
       key: formKey,
       child: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _GlassMiniHero(
@@ -1050,6 +1071,9 @@ class _StepBasic extends StatelessWidget {
   }
 }
 
+// ─────────────────────────────────────────────────────────────
+// Step 1 — Age & Gender
+// ─────────────────────────────────────────────────────────────
 class _StepAgeGender extends StatelessWidget {
   final String? ageRange, gender;
   final void Function(String) onAge, onGender;
@@ -1066,7 +1090,6 @@ class _StepAgeGender extends StatelessWidget {
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _GlassMiniHero(
@@ -1102,7 +1125,7 @@ class _StepAgeGender extends StatelessWidget {
               primary: cs.primary,
             ),
             _GlassPill(
-              label: 'Нууц',
+              label: 'Хэлэхгүй/Бусад',
               selected: gender == 'private',
               onTap: () => onGender('private'),
               primary: cs.primary,
@@ -1121,6 +1144,11 @@ class _StepAgeGender extends StatelessWidget {
   }
 }
 
+// ─────────────────────────────────────────────────────────────
+// Step 2 & 3 — Income / Expense Sources
+// FIX: removed mainAxisSize: MainAxisSize.min from Column
+// FIX: "Нэмэх" button uses fixed width Container instead of _GlassGradientButton
+// ─────────────────────────────────────────────────────────────
 class _StepSources extends StatelessWidget {
   final String title, subtitle;
   final List<String> options;
@@ -1150,7 +1178,6 @@ class _StepSources extends StatelessWidget {
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
@@ -1171,8 +1198,6 @@ class _StepSources extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-
-          // ✅ Wrap options
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -1187,8 +1212,7 @@ class _StepSources extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 14),
-
-          // Custom input row
+          // FIX: "Нэмэх" button — use fixed-width Container, not _GlassGradientButton
           Row(
             children: [
               Expanded(
@@ -1199,19 +1223,39 @@ class _StepSources extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              SizedBox(
-                height: 48,
-                child: _GlassGradientButton(
-                  label: 'Нэмэх',
-                  loading: false,
-                  onPressed: onAddCustom,
-                  primary: cs.primary,
+              GestureDetector(
+                onTap: onAddCustom,
+                child: Container(
+                  width: 80,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [cs.primary, cs.primary.withOpacity(0.85)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: cs.primary.withOpacity(0.3),
+                        blurRadius: 20,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
+                  ),
+                  alignment: Alignment.center,
+                  child: const Text(
+                    'Нэмэх',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14,
+                    ),
+                  ),
                 ),
               ),
             ],
           ),
-
-          // Custom items
           if (customItems.isNotEmpty) ...[
             const SizedBox(height: 12),
             Wrap(
@@ -1227,14 +1271,16 @@ class _StepSources extends StatelessWidget {
               ],
             ),
           ],
-
-          const SizedBox(height: 20), // Bottom padding
+          const SizedBox(height: 20),
         ],
       ),
     );
   }
 }
 
+// ─────────────────────────────────────────────────────────────
+// Step 4 — Flags
+// ─────────────────────────────────────────────────────────────
 class _StepFlags extends StatelessWidget {
   final bool hasLoan, hasSavings;
   final void Function(bool) onLoan, onSavings;
@@ -1251,7 +1297,6 @@ class _StepFlags extends StatelessWidget {
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _GlassMiniHero(
@@ -1283,6 +1328,9 @@ class _StepFlags extends StatelessWidget {
   }
 }
 
+// ─────────────────────────────────────────────────────────────
+// Step 5 — Profile Photo
+// ─────────────────────────────────────────────────────────────
 class _StepPhoto extends StatelessWidget {
   final XFile? file;
   final VoidCallback onPick, onClear;
@@ -1298,7 +1346,6 @@ class _StepPhoto extends StatelessWidget {
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _GlassMiniHero(
@@ -1373,6 +1420,9 @@ class _StepPhoto extends StatelessWidget {
   }
 }
 
+// ─────────────────────────────────────────────────────────────
+// Step 6 — Theme
+// ─────────────────────────────────────────────────────────────
 class _StepTheme extends StatelessWidget {
   final AppThemeKey current;
   final void Function(AppThemeKey) onSelect;
@@ -1388,7 +1438,6 @@ class _StepTheme extends StatelessWidget {
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _GlassMiniHero(
@@ -1449,6 +1498,9 @@ class _StepTheme extends StatelessWidget {
   }
 }
 
+// ─────────────────────────────────────────────────────────────
+// Glass TextField
+// ─────────────────────────────────────────────────────────────
 class _GlassTextField extends StatelessWidget {
   final TextEditingController controller;
   final String hint;
@@ -1512,6 +1564,9 @@ class _GlassTextField extends StatelessWidget {
   }
 }
 
+// ─────────────────────────────────────────────────────────────
+// Glass Pill
+// ─────────────────────────────────────────────────────────────
 class _GlassPill extends StatelessWidget {
   final String label;
   final bool selected;
@@ -1563,6 +1618,9 @@ class _GlassPill extends StatelessWidget {
   }
 }
 
+// ─────────────────────────────────────────────────────────────
+// Glass Chip
+// ─────────────────────────────────────────────────────────────
 class _GlassChip extends StatelessWidget {
   final String label;
   final VoidCallback onRemove;
@@ -1614,6 +1672,9 @@ class _GlassChip extends StatelessWidget {
   }
 }
 
+// ─────────────────────────────────────────────────────────────
+// Glass Switch Tile
+// ─────────────────────────────────────────────────────────────
 class _GlassSwitchTile extends StatelessWidget {
   final bool value;
   final void Function(bool) onChanged;
@@ -1676,6 +1737,9 @@ class _GlassSwitchTile extends StatelessWidget {
   }
 }
 
+// ─────────────────────────────────────────────────────────────
+// Glass Mini Hero
+// ─────────────────────────────────────────────────────────────
 class _GlassMiniHero extends StatelessWidget {
   final IconData icon;
   final String title, subtitle;
@@ -1734,6 +1798,9 @@ class _GlassMiniHero extends StatelessWidget {
   }
 }
 
+// ─────────────────────────────────────────────────────────────
+// Glass Info Box
+// ─────────────────────────────────────────────────────────────
 class _GlassInfoBox extends StatelessWidget {
   final String text;
   final Color primary;
@@ -1774,6 +1841,9 @@ class _GlassInfoBox extends StatelessWidget {
   }
 }
 
+// ─────────────────────────────────────────────────────────────
+// Glass Section Label
+// ─────────────────────────────────────────────────────────────
 class _GlassSectionLabel extends StatelessWidget {
   final String text;
   const _GlassSectionLabel(this.text);
@@ -1795,6 +1865,9 @@ class _GlassSectionLabel extends StatelessWidget {
   }
 }
 
+// ─────────────────────────────────────────────────────────────
+// Theme Color Dots
+// ─────────────────────────────────────────────────────────────
 class _ThemeColorDots extends StatelessWidget {
   @override
   Widget build(BuildContext context) {

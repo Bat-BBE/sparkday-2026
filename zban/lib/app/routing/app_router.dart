@@ -11,30 +11,26 @@ import '../../screens/auth/login_screen.dart';
 import '../../screens/auth/signup_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
-  final session = ref.watch(authSessionProvider);
-
   return GoRouter(
     initialLocation: '/splash',
     refreshListenable: _GoRouterRefresh(ref),
     redirect: (context, state) {
+      final session = ref.read(authSessionProvider);
       final loc = state.uri.path;
-      final isLoading = session.isLoading;
       final isAuthed = session.valueOrNull != null;
 
-      // Splash screen while auth is resolving
-      if (isLoading && loc != '/splash') return '/splash';
+      final isAuthPage =
+          loc == '/welcome' || loc == '/login' || loc == '/signup';
 
-      // Let splash handle its own navigation
       if (loc == '/splash') return null;
 
-      // Unauthenticated users can only stay on auth pages
-      if (!isAuthed && (loc == '/welcome' || loc == '/login' || loc == '/signup')) {
-        return null;
-      }
-      if (!isAuthed) return '/welcome';
+      if (session.isLoading) return null;
 
-      // Authenticated users shouldn't go back to auth pages
-      if (isAuthed && (loc == '/welcome' || loc == '/login' || loc == '/signup')) {
+      if (!isAuthed) {
+        return isAuthPage ? null : '/welcome';
+      }
+
+      if (isAuthed && isAuthPage) {
         return '/home';
       }
 

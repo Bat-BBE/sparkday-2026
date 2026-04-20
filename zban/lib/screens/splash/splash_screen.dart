@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/auth/auth_controller.dart';
+import '../../app/network/api_errors.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -86,10 +87,32 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     _authSub = ref.listenManual<AsyncValue<dynamic>>(
       authSessionProvider,
       (_, next) {
-        if (next.isLoading) return;
-        _authResolved = true;
-        _session = next.valueOrNull;
-        _tryNavigate();
+        next.when(
+          loading: () {},
+          data: (session) {
+            _authResolved = true;
+            _session = session;
+            _tryNavigate();
+          },
+          error: (error, stack) {
+            _authResolved = true;
+            _session = null;
+
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  error is ApiFailure
+                      ? (error.messageMn ?? 'Нэвтрэлт амжилтгүй.')
+                      : 'Алдаа гарлаа. Дахин оролдоно уу.',
+                ),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+
+            _tryNavigate();
+          },
+        );
       },
       fireImmediately: true,
     );

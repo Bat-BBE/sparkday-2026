@@ -55,7 +55,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
             email: _email.text.trim(),
             password: _password.text,
           );
-      if (mounted) context.go('/home');
+      // if (mounted) context.go('/home');
     } catch (e) {
       if (!mounted) return;
       final failure = e is ApiFailure ? e : null;
@@ -451,7 +451,7 @@ class _GlassHeader extends StatelessWidget {
           height: 90,
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [primary, primary.withOpacity(0.6)],
+              colors: [primary, primary.withOpacity(0.1)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -469,7 +469,6 @@ class _GlassHeader extends StatelessWidget {
             child: Image.asset(
               'assets/branding/amon_logo.png',
               fit: BoxFit.contain,
-              color: Colors.white,
             ),
           ),
         ),

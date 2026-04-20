@@ -8,7 +8,7 @@ import { debtsRouter } from "./routes/debts";
 
 const app = express();
 const corsOptions: cors.CorsOptions = {
-  origin: (_origin, cb) => cb(null, true), // allow all origins (dev)
+  origin: (_origin, cb) => cb(null, true),
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: false,
@@ -16,9 +16,8 @@ const corsOptions: cors.CorsOptions = {
 };
 
 app.use(cors(corsOptions));
-// Express v5 doesn't accept "*" here; use a regex to match all paths.
 app.options(/.*/, cors(corsOptions));
-app.use(express.json({ limit: "1mb" }));
+app.use(express.json({ limit: "20mb" }));
 
 app.get("/health", (_req, res) => res.json({ ok: true }));
 app.use("/auth", authRouter);
@@ -28,7 +27,5 @@ app.use("/debts", debtsRouter);
 
 const port = Number(process.env.PORT ?? 4000);
 app.listen(port, () => {
-  // eslint-disable-next-line no-console
   console.log(`zban backend listening on :${port}`);
 });
-
